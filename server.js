@@ -28,11 +28,11 @@ app.post('/login', authenticateUser, (req, res) => {
 // Add a new user endpoint
 app.post('/add-user', addUser);
 
-app.get('/students/:batch/:section', async (req, res) => {
-  const { batch, section } = req.params;
+app.get('/students/:batch/:subCode/:section', async (req, res) => {
+  const { batch, subCode , section } = req.params;
 
   try {
-    const studentsData = await students.getStudentData(batch, section);
+    const studentsData = await students.getStudentData(batch, subCode, section);
     res.json(studentsData);
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -40,13 +40,28 @@ app.get('/students/:batch/:section', async (req, res) => {
   }
 });
 
-app.post('/students', async (req, res) => {
+app.post('/marks', async (req, res) => {
   try {
-    await dataAccess.addStudent(req.body);
+    await students.addStudentData(req.body);
     res.status(201).send('Student added successfully');
   } catch (error) {
     console.error('Error adding student:', error);
     res.status(500).send('Error adding student');
+  }
+});
+
+app.get('/marks/:usn', async (req, res) => {
+  const { usn } = req.params;
+
+  try {
+    const studentData = await students.getStudentMarks(usn);
+    if (!studentData.length) {
+      return res.status(404).send('Student not found');
+    }
+    res.json(studentData);
+  } catch (error) {
+    console.error('Error fetching student details:', error);
+    res.status(500).send('Internal Server Error');
   }
 });
 
